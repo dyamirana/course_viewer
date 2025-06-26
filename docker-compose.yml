@@ -11,7 +11,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "328:80"
     volumes:
       - ./app/static:/usr/share/nginx/html
       - ./files:/usr/share/nginx/html/files
