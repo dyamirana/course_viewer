@@ -7,9 +7,15 @@
     <style>
         ul { list-style-type: none; padding-left: 1rem; }
         .dir { font-weight: bold; }
+        #layout{display:flex;}
+        #sidebar{width:250px;overflow-y:auto;}
+        @media (max-width: 768px){
+            #sidebar{position:absolute;left:0;top:0;bottom:0;background:#fff;padding:1rem;transform:translateX(-100%);transition:transform .3s;width:250px;z-index:1000;}
+            #sidebar.show{transform:translateX(0);}
+        }
     </style>
 </head>
-<body class="container py-4">
+<body class="container-fluid py-4">
 <div id="login">
     <h2 class="mb-3">Login</h2>
     <div class="mb-2"><input class="form-control" id="user" placeholder="username"></div>
@@ -18,11 +24,18 @@
     <div class="text-danger mt-2" id="login-error"></div>
 </div>
 <div id="content" style="display:none;">
-    <h2>Files</h2>
-    <div id="tree" class="mb-3"></div>
-    <iframe id="viewer" class="w-100" style="height:500px;"></iframe>
-    <br>
-    <button class="btn btn-secondary mt-2" onclick="nextFile()">Next</button>
+    <button class="btn btn-outline-secondary mb-3 d-md-none" onclick="toggleSidebar()">Файлы</button>
+    <div id="layout">
+        <div id="sidebar" class="pe-3 border-end">
+            <button class="btn btn-sm btn-outline-secondary mb-2 d-md-none" onclick="toggleSidebar()">Закрыть</button>
+            <div id="tree"></div>
+        </div>
+        <div id="main" class="flex-grow-1 ps-3">
+            <div id="viewer" style="min-height:500px;"></div>
+            <br>
+            <button class="btn btn-secondary mt-2" onclick="nextFile()">Next</button>
+        </div>
+    </div>
 </div>
 <script>
 let token = '';
@@ -70,7 +83,33 @@ function renderTree(nodes){
 function openFileId(id){
     currentId = id;
     const path = idPath[id];
-    document.getElementById('viewer').src = '/files/' + path;
+    const viewer = document.getElementById('viewer');
+    viewer.innerHTML = '';
+    const ext = path.split('.').pop().toLowerCase();
+    const url = '/files/' + path;
+    if(['mp4','webm','ogg'].includes(ext)){
+        const v = document.createElement('video');
+        v.controls = true;
+        v.className='w-100';
+        v.src = url;
+        viewer.appendChild(v);
+    } else if(['png','jpg','jpeg','gif','bmp','webp'].includes(ext)){
+        const img = document.createElement('img');
+        img.className='img-fluid';
+        img.src = url;
+        viewer.appendChild(img);
+    } else if(['html','htm','pdf'].includes(ext)){
+        const frame = document.createElement('iframe');
+        frame.src = url;
+        frame.className='w-100';
+        frame.style.minHeight='500px';
+        viewer.appendChild(frame);
+    } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = path.split('/').pop();
+        a.click();
+    }
     fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':token},body:JSON.stringify({file_id:id})});
 }
 function nextFile(){
@@ -82,6 +121,9 @@ function nextFile(){
     });
 }
 const idPath={};
+function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('show');
+}
 </script>
 </body>
 </html>
