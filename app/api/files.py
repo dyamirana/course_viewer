@@ -1,40 +1,36 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..models import File, Progress
-from ..utils.core import get_db, tokens, build_tree
+from ..utils.core import get_db, build_tree
 
 router = APIRouter()
 
-async def get_current_user(request: Request):
-    token = request.headers.get('Authorization')
-    if not token or token not in tokens:
-        raise HTTPException(status_code=401, detail='Unauthorized')
-    return tokens[token]
+DEFAULT_USER_ID = 1
 
 @router.get('/files')
-def get_files(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_files(db: Session = Depends(get_db)):
     return build_tree(db)
 
 @router.get('/progress')
-def get_progress(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
-    progress = db.query(Progress).filter_by(user_id=user_id).first()
+def get_progress(db: Session = Depends(get_db)):
+    progress = db.query(Progress).filter_by(user_id=DEFAULT_USER_ID).first()
     return {'file_id': progress.file_id if progress else None}
 
 @router.post('/progress')
-def set_progress(data: dict, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+def set_progress(data: dict, db: Session = Depends(get_db)):
     file_id = data.get('file_id')
-    progress = db.query(Progress).filter_by(user_id=user_id).first()
+    progress = db.query(Progress).filter_by(user_id=DEFAULT_USER_ID).first()
     if progress:
         progress.file_id = file_id
     else:
-        progress = Progress(user_id=user_id, file_id=file_id)
+        progress = Progress(user_id=DEFAULT_USER_ID, file_id=file_id)
         db.add(progress)
     db.commit()
     return {'status': 'ok'}
 
 @router.get('/next/{file_id}')
-def next_file(file_id: int, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+def next_file(file_id: int, db: Session = Depends(get_db)):
     current = db.query(File).filter_by(id=file_id).first()
     if not current:
         return {'file_id': None}

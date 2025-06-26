@@ -11,7 +11,8 @@
         .dir { font-weight: bold; }
         #content{height:100%;display:flex;flex-direction:column;min-height:0;}
         #layout{display:flex;flex:1;overflow:hidden;min-height:0;}
-        #sidebar{width:250px;overflow-y:auto;height:100%;flex-shrink:0;}
+        #sidebar{width:250px;height:100%;flex-shrink:0;display:flex;flex-direction:column;}
+        #tree{overflow-y:auto;flex:1;}
         #main{flex-grow:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
         #viewer{flex-grow:1;overflow:auto;}
         #tree li.active{background:#0d6efd33;}
@@ -22,13 +23,6 @@
     </style>
 </head>
 <body class="container-fluid py-4" style="height:100vh;">
-<div id="login">
-    <h2 class="mb-3">Login</h2>
-    <div class="mb-2"><input class="form-control" id="user" placeholder="username"></div>
-    <div class="mb-2"><input class="form-control" id="pass" type="password" placeholder="password"></div>
-    <button class="btn btn-primary" onclick="login()">Login</button>
-    <div class="text-danger mt-2" id="login-error"></div>
-</div>
 <div id="content" style="display:none;">
     <button class="btn btn-outline-secondary mb-3" id="sidebarToggle" onclick="toggleSidebar()">Файлы</button>
     <div id="layout">
@@ -43,28 +37,11 @@
     </div>
 </div>
 <script>
-let token = '';
 let currentId = null;
-function login() {
-    fetch('/api/login', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({username:document.getElementById('user').value, password:document.getElementById('pass').value})
-    }).then(r=>r.json()).then(d=>{
-        if(d.token){
-            token = d.token;
-            document.getElementById('login').style.display='none';
-            document.getElementById('content').style.display='block';
-            loadFiles();
-        } else {
-            document.getElementById('login-error').innerText='Invalid credentials';
-        }
-    });
-}
 function loadFiles(){
-    fetch('/api/files',{headers:{'Authorization':token}}).then(r=>r.json()).then(d=>{
+    fetch('/api/files').then(r=>r.json()).then(d=>{
         document.getElementById('tree').appendChild(renderTree(d));
-        fetch('/api/progress',{headers:{'Authorization':token}}).then(r=>r.json()).then(p=>{
+        fetch('/api/progress').then(r=>r.json()).then(p=>{
             if(p.file_id){ openFileId(p.file_id); }
         });
     });
@@ -123,12 +100,12 @@ function openFileId(id){
         a.download = path.split('/').pop();
         a.click();
     }
-    fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json','Authorization':token},body:JSON.stringify({file_id:id})});
+    fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({file_id:id})});
 }
 function nextFile(){
-    fetch('/api/progress',{headers:{'Authorization':token}}).then(r=>r.json()).then(p=>{
+    fetch('/api/progress').then(r=>r.json()).then(p=>{
         const id = p.file_id;
-        fetch('/api/next/'+id,{headers:{'Authorization':token}}).then(r=>r.json()).then(n=>{
+        fetch('/api/next/'+id).then(r=>r.json()).then(n=>{
             if(n.file_id){ openFileId(n.file_id); }
         });
     });
@@ -144,6 +121,10 @@ function toggleSidebar(){
         sidebar.classList.toggle('d-none');
     }
 }
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('content').style.display='block';
+    loadFiles();
+});
 </script>
 </body>
 </html>

@@ -13,8 +13,6 @@ FILES_DIR = os.environ.get('COURSE_DIR', 'files')
 engine = create_engine(f"sqlite:///{DB_PATH}")
 Base.metadata.create_all(engine)
 
-tokens: dict[str, int] = {}
-
 def get_db() -> Generator[Session, None, None]:
     db = Session(engine)
     try:
