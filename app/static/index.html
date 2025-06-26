@@ -16,15 +16,16 @@
         #main{flex-grow:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
         #viewer{flex-grow:1;overflow:auto;}
         #tree li.active{background:#0d6efd33;}
+        #sidebarToggle{position:fixed;top:1rem;left:1rem;z-index:1101;}
         @media (max-width: 768px){
             #sidebar{position:absolute;left:0;top:0;bottom:0;background:#fff;padding:1rem;transform:translateX(-100%);transition:transform .3s;width:250px;z-index:1000;}
             #sidebar.show{transform:translateX(0);}
         }
     </style>
 </head>
-<body class="container-fluid py-4" style="height:100vh;">
+<body class="container-fluid" style="height:100vh;">
 <div id="content" style="display:none;">
-    <button class="btn btn-outline-secondary mb-3" id="sidebarToggle" onclick="toggleSidebar()">Файлы</button>
+    <button class="btn btn-outline-secondary" id="sidebarToggle" onclick="toggleSidebar()">Файлы</button>
     <div id="layout">
         <div id="sidebar" class="pe-3 border-end">
             <button class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleSidebar()">Закрыть</button>
