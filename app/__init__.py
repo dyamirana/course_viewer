@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from .utils.core import scan, ensure_user, FILES_DIR
-from .api import auth, files
+from .api import files
 
 
 def create_app() -> FastAPI:
@@ -18,7 +18,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(auth.router, prefix="/api")
     app.include_router(files.router, prefix="/api")
 
     app.mount("/files", StaticFiles(directory=FILES_DIR), name="files")

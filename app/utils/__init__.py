@@ -3,7 +3,6 @@ from .core import (
     scan,
     ensure_user,
     build_tree,
-    tokens,
     FILES_DIR,
 )
 
@@ -12,6 +11,5 @@ __all__ = [
     "scan",
     "ensure_user",
     "build_tree",
-    "tokens",
     "FILES_DIR",
 ]
