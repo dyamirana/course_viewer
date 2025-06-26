@@ -9,11 +9,12 @@
         ul { list-style-type: none; padding-left: 1rem; }
         summary{cursor:pointer;}
         .dir { font-weight: bold; }
-        #content{height:100%;display:flex;flex-direction:column;}
-        #layout{display:flex;flex:1;overflow:hidden;}
+        #content{height:100%;display:flex;flex-direction:column;min-height:0;}
+        #layout{display:flex;flex:1;overflow:hidden;min-height:0;}
         #sidebar{width:250px;overflow-y:auto;height:100%;flex-shrink:0;}
-        #main{flex-grow:1;overflow:auto;display:flex;flex-direction:column;}
-        #viewer{flex-grow:1;}
+        #main{flex-grow:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+        #viewer{flex-grow:1;overflow:auto;}
+        #tree li.active{background:#0d6efd33;}
         @media (max-width: 768px){
             #sidebar{position:absolute;left:0;top:0;bottom:0;background:#fff;padding:1rem;transform:translateX(-100%);transition:transform .3s;width:250px;z-index:1000;}
             #sidebar.show{transform:translateX(0);}
@@ -29,15 +30,14 @@
     <div class="text-danger mt-2" id="login-error"></div>
 </div>
 <div id="content" style="display:none;">
-    <button class="btn btn-outline-secondary mb-3 d-md-none" onclick="toggleSidebar()">Файлы</button>
+    <button class="btn btn-outline-secondary mb-3" id="sidebarToggle" onclick="toggleSidebar()">Файлы</button>
     <div id="layout">
         <div id="sidebar" class="pe-3 border-end">
-            <button class="btn btn-sm btn-outline-secondary mb-2 d-md-none" onclick="toggleSidebar()">Закрыть</button>
+            <button class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleSidebar()">Закрыть</button>
             <div id="tree"></div>
         </div>
         <div id="main" class="flex-grow-1 ps-3">
             <div id="viewer"></div>
-            <br>
             <button class="btn btn-secondary mt-2" onclick="nextFile()">Next</button>
         </div>
     </div>
@@ -84,6 +84,7 @@ function renderTree(nodes){
         } else {
             li.textContent = n.name;
             idPath[n.id]=n.path;
+            idElem[n.id]=li;
             li.onclick=()=>openFileId(n.id);
         }
         ul.appendChild(li);
@@ -91,6 +92,8 @@ function renderTree(nodes){
     return ul;
 }
 function openFileId(id){
+    if(activeElem){activeElem.classList.remove('active');}
+    if(idElem[id]){idElem[id].classList.add('active');activeElem=idElem[id];idElem[id].scrollIntoView({block:'nearest'});let p=idElem[id].parentElement;while(p){if(p.tagName==='DETAILS'){p.open=true;}p=p.parentElement;} }
     currentId = id;
     const path = idPath[id];
     const viewer = document.getElementById('viewer');
@@ -112,8 +115,7 @@ function openFileId(id){
     } else if(['html','htm','pdf'].includes(ext)){
         const frame = document.createElement('iframe');
         frame.src = url;
-        frame.className='w-100';
-        frame.style.minHeight='500px';
+        frame.className='w-100 h-100 border-0';
         viewer.appendChild(frame);
     } else {
         const a = document.createElement('a');
@@ -132,8 +134,15 @@ function nextFile(){
     });
 }
 const idPath={};
+const idElem={};
+let activeElem=null;
 function toggleSidebar(){
-    document.getElementById('sidebar').classList.toggle('show');
+    const sidebar=document.getElementById('sidebar');
+    if(window.innerWidth<768){
+        sidebar.classList.toggle('show');
+    }else{
+        sidebar.classList.toggle('d-none');
+    }
 }
 </script>
 </body>
