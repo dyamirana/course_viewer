@@ -3,11 +3,11 @@ services:
   app:
     build: .
     volumes:
-      - ./course.db:/app/course.db
+      - ./db:/app/db
       - ./files:/app/files
     environment:
       - COURSE_DIR=/app/files
-      - COURSE_DB=/app/course.db
+      - COURSE_DB=/app/db/course.db
   nginx:
     image: nginx:alpine
     ports:
